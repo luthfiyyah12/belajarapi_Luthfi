@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\KategoriController;
 use App\Http\Controllers\Api\GenreController;
+use App\Http\Controllers\Api\AktorController;
+use App\Http\Controllers\Api\FilmController;
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,8 +22,9 @@ Route::get('/user', function (Request $request) {
 Route::middleware(['auth:sanctum'])->group(function(){
     Route::post('logout', [AuthController::class, 'logout']);
     Route::resource('kategori', KategoriController::class);
-    Route::resource('gendre', GendreController::class);
+    Route::resource('genre', GenreController::class);
     Route::resource('aktor', AktorController::class);
+    Route::resource('film', FilmController::class);
 
 });
 
