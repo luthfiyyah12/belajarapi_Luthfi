@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Auth;
-use App\Models\user;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -13,36 +15,38 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|max:255|unique:user',
+            'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
         ]);
 
-        if($validator->fails()){
-            return response()->json($validator->errors());
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
         }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => $request->Hash::make($request->password),
+            'password' => Hash::make($request->password),
         ]);
 
-        return reaponse()->json([
+        return response()->json([
             'data' => $user,
-            'succes' => true,
-            'message' => 'user berhasil dibuat',
-        ]);
+            'success' => true,
+            'message' => 'User berhasil dibuat',
+        ], 201);
     }
 
     public function login(Request $request)
     {
-        if (! Auth::attempt($request->only('email', 'password'))) {
+        $credentials = $request->only('email', 'password');
+
+        if (!Auth::attempt($credentials)) {
             return response()->json([
                 'message' => 'Unauthorized'
             ], 401);
         }
 
-        $user = User::where('email', $request->email)->firstOrFail();
+        $user = Auth::user(); // Mendapatkan user yang sudah login
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -50,15 +54,14 @@ class AuthController extends Controller
             'message' => 'Login success',
             'access_token' => $token,
             'token_type' => 'Bearer'
-        ]);
+        ], 200);
     }
 
     public function logout()
     {
         Auth::user()->tokens()->delete();
         return response()->json([
-            'message' => 'logout success'
-        ]);
+            'message' => 'Logout success'
+        ], 200);
     }
-
 }
